@@ -5,7 +5,7 @@ using System.Text;
 namespace Entities.Abstract
 {
     // IEntity implement  eden class
-    interface IEntity
+    public interface IEntity
     {
     }
 }
