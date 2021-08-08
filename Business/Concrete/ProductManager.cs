@@ -1,9 +1,9 @@
 ﻿using Business.Abstract;
-using Business.CCS;
 using Business.Constants;
 using Business.ValidationRules.FluentValidation;
 using Core.Aspects.Autofac.Validation;
 using Core.CrossCuttingConcerns.Validation;
+using Core.Utilities.Business;
 using Core.Utilities.Results;
 using DataAccess.Abstract;
 using Entities.Concrete;
@@ -11,6 +11,7 @@ using Entities.DTOs;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Business.Concrete
@@ -18,37 +19,33 @@ namespace Business.Concrete
     public class ProductManager : IProductService
     {
         IProductDal _productDal;
-        ILogger _logger;
+        ICategoryService _categoryService;
 
-        public ProductManager(IProductDal productDal)
+        public ProductManager(IProductDal productDal, ICategoryService categoryService)
         {
             _productDal = productDal;
-        }
-        public ProductManager(IProductDal productDal, ILogger logger)
-        {
-            _productDal = productDal;
-            _logger = logger;
+            _categoryService = categoryService;
         }
 
-        //[ValidationAspect(typeof(ProductValidator))]
+        /// <summary>
+        /// business codes
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
+        [ValidationAspect(typeof(ProductValidator))]
         public IResult Add(Product product)
         {
-            _logger.Log();
-            try
-            {
-                //business codes
+            IResult result = BusinessRules.Run(CheckIfProductNameExists(product.ProductName),
+                CheckIfProductCountOfCategory(product.CategoryId),
+                CheckIfCategoryLimitExceded());
 
-                _productDal.Add(product);
-
-                return new SuccessResult(Messages.ProductAdded);
-                //return new Result(true,"Urun Eklendi");
-                //return new SuccessResult();
-            }
-            catch (Exception exception)
+            if (result != null)
             {
-                _logger.Log();
-                return new ErrorResult();
+                return result;
             }
+            _productDal.Add(product);
+            return new SuccessResult(Messages.ProductAdded);
+
         }
 
         public IDataResult<List<Product>> GetAll()
@@ -59,7 +56,7 @@ namespace Business.Concrete
                 return new ErrorDataResult<List<Product>>(Messages.MaintenanceTime);
             }
 
-            return new SuccessDataResult<List<Product>>(_productDal.GetAll(),Messages.ProductListed);
+            return new SuccessDataResult<List<Product>>(_productDal.GetAll(), Messages.ProductListed);
         }
 
         public IDataResult<List<Product>> GetAllByCategoryId(int id)
@@ -85,6 +82,42 @@ namespace Business.Concrete
             //    return new ErrorDataResult<List<ProductDetailDto>>(Messages.MaintenanceTime);
             //}
             return new SuccessDataResult<List<ProductDetailDto>>(_productDal.GetProductDetails());
+        }
+
+        public IResult Update(Product productId)
+        {
+            throw new NotImplementedException();
+        }
+
+        private IResult CheckIfProductCountOfCategory(int categoryId)
+        {
+            int result = _productDal.GetAll(p => p.CategoryId == categoryId).Count;
+            if (result >= 10)
+            {
+                return new ErrorResult(Messages.ProductCountOfCategoryError);
+            }
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfProductNameExists(string productName)
+        {
+            bool result = _productDal.GetAll(p => p.ProductName == productName).Any();
+            if (result)
+            {
+                return new ErrorResult(Messages.ProductNameAlreadyExists);
+            }
+            return new SuccessResult();
+        }
+
+        private IResult CheckIfCategoryLimitExceded()
+        {
+            var result = _categoryService.GetAll();
+
+            if (result.Data.Count>15)
+            {
+                return new ErrorResult(Messages.CategoryLimitExceded);
+            }
+            return new SuccessResult();
         }
     }
 }
