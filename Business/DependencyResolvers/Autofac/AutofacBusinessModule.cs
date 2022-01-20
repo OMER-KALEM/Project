@@ -18,7 +18,6 @@ namespace Business.DependencyResolvers.Autofac
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<ProductManager>().As<IProductService>().SingleInstance();
-            // biri senden "IProductService" istersen ona "ProductManager" instance i ver.
             builder.RegisterType<EfProductDal>().As<IProductDal>().SingleInstance();
             
             builder.RegisterType<CategoryManager>().As<ICategoryService>().SingleInstance();

@@ -1,24 +1,19 @@
 ﻿using Business.Abstract;
-using Business.Concrete;
-using DataAccess.Concrete.EntityFramework;
 using Entities.Concrete;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-
+    [ApiController] //You are a controller
     public class ProductsController : ControllerBase
     {
-        //Loosely coupled
-        // _productService de alttre olması --> naming convention
-        //default private
-        //IoC Container -- Inverion of Control
         IProductService _productService;
 
         public ProductsController(IProductService productService)
@@ -26,21 +21,21 @@ namespace WebAPI.Controllers
             _productService = productService;
         }
 
-        [HttpGet("getall")]
-        public IActionResult Get()
+        [HttpGet("getAllProducts")]
+        public IActionResult GetAll()
         {
+            Thread.Sleep(500);
             var result = _productService.GetAll();
             if (result.Success)
             {
                 return Ok(result);
-                //return Ok(result.Data);
-                //return Ok(result.Message);
             }
             return BadRequest(result);
+
         }
-         
-        [HttpGet("getbyid")]
-        public IActionResult Get(int productId)
+
+        [HttpGet("getProductById")]
+        public IActionResult GetById(int productId)
         {
             var result = _productService.GetById(productId);
             if (result.Success)
@@ -50,18 +45,28 @@ namespace WebAPI.Controllers
             return BadRequest(result);
         }
 
-
-        [HttpPost("add")]
-        public IActionResult Add(Product product)
+        [HttpGet("getAllProductsByCategoryId")]
+        public IActionResult GetByCategoryId(int categoryId)
         {
-            var result = _productService.Add(product);
-
+            var result = _productService.GetAllByCategoryId(categoryId);
             if (result.Success)
             {
                 return Ok(result);
             }
             return BadRequest(result);
         }
+
+        [HttpPost("addProduct")]
+        public IActionResult Add(Product product)
+        {
+            var result = _productService.Add(product);
+            if (result.Success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        
     }
 }
- 

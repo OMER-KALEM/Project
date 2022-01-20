@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Core.Entities
 {
-    // IEntity implement  eden class
+    // IEntity implement  eden class bir veritabani tablosudur. 
     public interface IEntity
     {
     }

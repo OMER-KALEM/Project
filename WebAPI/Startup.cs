@@ -1,22 +1,15 @@
-using Business.Abstract;
-using Business.Concrete;
-using Core.Utilities.Securtiy.Encryption;
-using Core.Utilities.Securtiy.JWT;
-using DataAccess.Abstract;
-using DataAccess.Concrete.EntityFramework;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Core.DependencyResolvers;
+using Core.Extensions;
+using Core.Utilities.IoC;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Core.Utilities.Securtiy.JWT;
+using Core.Utilities.Securtiy.Encryption;
 
 namespace WebAPI
 {
@@ -32,19 +25,11 @@ namespace WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //Autofac, ninject, CastleWinder, StructerMap, LightInject --> IoC Container
-            //AOP
-            //Postsharp
-
-            //Nuget
-            //Autofac
-            //Autofac.extras (DynamicProxy)
-            
             services.AddControllers();
-            //services.AddSingleton<IProductService, ProductManager>();
-            //services.AddSingleton<IProductDal, EfProductDal>();
+            //services.AddSingleton<IProductService,ProductManager>();
+            //services.AddSingleton<IProductDal,EfProductDal>();
 
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddCors();//Bunu Ekle istek atabilmek için
 
             var tokenOptions = Configuration.GetSection("TokenOptions").Get<TokenOptions>();
 
@@ -62,6 +47,10 @@ namespace WebAPI
                         IssuerSigningKey = SecurityKeyHelper.CreateSecurityKey(tokenOptions.SecurityKey)
                     };
                 });
+            services.AddDependencyResolvers(new ICoreModule[]
+            {
+                new CoreModule()
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,14 +60,11 @@ namespace WebAPI
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+
+            //app.ConfigureCustomExceptionMiddleware();
+            app.UseCors(builder=>builder.WithOrigins("http://localhost:4200").AllowAnyHeader());
+
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -88,9 +74,7 @@ namespace WebAPI
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllers();
             });
         }
     }

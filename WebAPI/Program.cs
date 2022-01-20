@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
+
 namespace WebAPI
 {
     public class Program
@@ -21,15 +23,12 @@ namespace WebAPI
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseServiceProviderFactory(new AutofacServiceProviderFactory()) //.net yazanlar demis ki
-                                                                                //"dostum senin .netcore alt yapýnda ios yapýsý si var ama
-                                                                                //onu kullanma fabrika olarak Autofaci kullan.Sen bunu degistirebil
-                                                                                //diye biz boyle bi yapýk kurduk.
+                .UseServiceProviderFactory(new AutofacServiceProviderFactory())
                 .ConfigureContainer<ContainerBuilder>(builder =>
                 {
                     builder.RegisterModule(new AutofacBusinessModule());
                 })
-                
+
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

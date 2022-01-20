@@ -14,17 +14,20 @@ namespace Core.Utilities.Securtiy.JWT
     public class JwtHelper:ITokenHelper
     {
         /// <summary>
-        /// Api deki "appsettings.json dosyasını okumaya yarıyor.
+        /// IConfiguration Api deki "appsettings.json dosyasını okumaya yarıyor.
         /// </summary>
         public IConfiguration Configuration { get; }
+        /// <summary>
+        /// //IConfiguration ile "appsettings" i okuduktan sonra değerleri attığım nesne.
+        /// TokenOptions nesnesinin alanları "appsettings.json" içerisindeki "TokenOptions" alanları ile aynı.
+        /// </summary>
         private TokenOptions _tokenOptions;
         private DateTime _accessTokenExpiration;
         public JwtHelper(IConfiguration configuration)
         {
             Configuration = configuration;
-            //Ders14 2.22 de kullanildi. Bende hata verdigi icin degistirdim
-            //_tokenOptions = Configuration.GetSection("TokenOptions").Get<TokenOptions>();
-            _tokenOptions = (TokenOptions)Configuration.GetSection("TokenOptions");
+            _tokenOptions = Configuration.GetSection("TokenOptions").Get<TokenOptions>();
+            //_tokenOptions = (TokenOptions)Configuration.GetSection("TokenOptions");
             
         }
         public AccessToken CreateToken(User user, List<OperationClaim> operationClaims)
@@ -41,8 +44,8 @@ namespace Core.Utilities.Securtiy.JWT
                 Token = token,
                 Expiration = _accessTokenExpiration
             };
-
         }
+
 
         public JwtSecurityToken CreateJwtSecurityToken(TokenOptions tokenOptions, User user, 
             SigningCredentials signingCredentials, List<OperationClaim> operationClaims)

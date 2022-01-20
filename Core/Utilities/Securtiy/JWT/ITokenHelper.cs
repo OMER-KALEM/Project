@@ -8,7 +8,5 @@ namespace Core.Utilities.Securtiy.JWT
     public interface ITokenHelper
     {
         AccessToken CreateToken(User user, List<OperationClaim> operaitonClaims);
-        //14.ders
-        //2.04 te kaldım
     }
 }
